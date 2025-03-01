@@ -77,7 +77,7 @@ export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumb
             "Enviando..."
           ) : (
             <>
-              <Send className="mr-2 h-4 w-4" />Enviar para a cozinha
+              <Send className="mr-2 h-4 w-4" />Enviar pedido para a cozinha
             </>
           )}
         </Button>
@@ -96,7 +96,7 @@ export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumb
     </Sheet>
   ) : (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md flex flex-col h-[80vh] bg-[#FFFCF7] text-[#0B0A0B]">
+      <DialogContent className="sm:max-w-md flex flex-col h-[80vh] bg-[#F6E7D7] text-[#0B0A0B]">
         <DialogHeader>
           <DialogTitle>Seu pedido (Mesa {tableNumber})</DialogTitle>
         </DialogHeader>

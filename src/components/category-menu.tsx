@@ -39,7 +39,7 @@ export default function CategoryMenu({ category, addToCart }: CategoryMenuProps)
               onClick={() => addToCart(item)}
               className="w-full bg-[#3D2F29] text-[#F6E7D7] hover:bg-[#3D2F29]/80"
             >
-              <PlusCircle className="mr-2 h-4 w-4" /> Fazer pedido
+              <PlusCircle className="mr-2 h-4 w-4" /> Adicionar ao pedido
             </Button>
           </CardFooter>
         </Card>
