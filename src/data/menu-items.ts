@@ -1,100 +1,173 @@
 import type { MenuItem } from "@/types/menu"
 
 export const menuItems: MenuItem[] = [
-  // Starters
+  // Entradas
   {
     id: 1,
-    name: "Bruschetta",
-    description: "Toasted bread topped with tomatoes, garlic, and fresh basil",
-    price: 8.95,
+    name: "Batata frita",
+    description: "Crocante por fora e macia por dentro, acompanhada de molho especial.",
+    price: 22.00,
     category: "starters",
-    image: "/placeholder.svg?height=200&width=400",
+    image: "/French-fries.jpg",
   },
   {
     id: 2,
-    name: "Arancini",
-    description: "Crispy fried rice balls stuffed with mozzarella and peas",
-    price: 9.95,
+    name: "Pastel de fumeiro com banana",
+    description: "Recheio agridoce e defumado, uma combinação surpreendente.",
+    price: 22.00,
     category: "starters",
-    image: "/placeholder.svg?height=200&width=400",
+    image: "/pastel-fumeiro-banana.jpg", // Adicionei imagem específica
   },
   {
     id: 3,
-    name: "Caprese Salad",
-    description: "Fresh mozzarella, tomatoes, and basil drizzled with balsamic glaze",
-    price: 10.95,
+    name: "Provolone empanado",
+    description: "Queijo provolone empanado e crocante, servido com geleia de pimenta.",
+    price: 24.00,
     category: "starters",
-    image: "/placeholder.svg?height=200&width=400",
+    image: "/provolone-empanado.jpg", // Adicionei imagem específica
   },
-
-  // Main Courses
   {
     id: 4,
-    name: "Bistro Burger",
-    description: "Angus beef patty with caramelized onions, aged cheddar, and truffle aioli",
-    price: 16.95,
-    category: "mains",
-    image: "/placeholder.svg?height=200&width=400",
+    name: "Dadinho de tapioca",
+    description: "Cubinhos de tapioca crocantes com queijo coalho e melado.",
+    price: 24.00,
+    category: "starters",
+    image: "/dadinho-tapioca.jpg", // Adicionei imagem específica
   },
   {
     id: 5,
-    name: "Coq au Vin",
-    description: "Classic French chicken braised with wine, mushrooms, and pearl onions",
-    price: 22.95,
-    category: "mains",
-    image: "/placeholder.svg?height=200&width=400",
+    name: "Kibe",
+    description: "Kibe frito tradicional, temperado com especiarias e hortelã.",
+    price: 32.00,
+    category: "starters",
+    image: "/kibe.jpg", // Adicionei imagem específica
   },
   {
     id: 6,
-    name: "Mushroom Risotto",
-    description: "Creamy arborio rice with wild mushrooms and parmesan",
-    price: 18.95,
-    category: "mains",
-    image: "/placeholder.svg?height=200&width=400",
+    name: "Camarão na tapioca",
+    description: "Camarões salteados com especiarias, servidos em cama de tapioca cremosa.",
+    price: 38.00,
+    category: "starters",
+    image: "/camarao-tapioca.jpg", // Adicionei imagem específica
   },
-
-  // Desserts
   {
     id: 7,
-    name: "Crème Brûlée",
-    description: "Classic vanilla custard with a caramelized sugar crust",
-    price: 8.95,
-    category: "desserts",
-    image: "/placeholder.svg?height=200&width=400",
+    name: "Bolinho de costela",
+    description: "Bolinhos de costela desfiada, empanados e crocantes.",
+    price: 38.00,
+    category: "starters",
+    image: "/bolinho-costela.jpg", // Adicionei imagem específica
   },
   {
     id: 8,
-    name: "Chocolate Fondant",
-    description: "Warm chocolate cake with a molten center, served with vanilla ice cream",
-    price: 9.95,
-    category: "desserts",
-    image: "/placeholder.svg?height=200&width=400",
+    name: "Caponata de berinjela",
+    description: "Berinjelas assadas com legumes e especiarias, servida com torradas.",
+    price: 34.00,
+    category: "starters",
+    image: "/caponata-berinjela.jpg", // Adicionei imagem específica
   },
-
-  // Drinks
   {
     id: 9,
-    name: "French Press Coffee",
-    description: "Locally roasted organic coffee",
-    price: 4.95,
-    category: "drinks",
-    image: "/placeholder.svg?height=200&width=400",
+    name: "Escondidinho (individual)",
+    description: "Purê de mandioca cremoso com recheio à sua escolha.",
+    price: 25.00,
+    category: "mains",
+    image: "/escondidinho.jpg", // Adicionei imagem específica
   },
   {
     id: 10,
-    name: "Sparkling Water",
-    description: "San Pellegrino (500ml)",
-    price: 3.95,
-    category: "drinks",
-    image: "/placeholder.svg?height=200&width=400",
+    name: "Sanduíche de pernil",
+    description: "Pernil desfiado, queijo, vinagrete e maionese da casa no pão francês.",
+    price: 28.00,
+    category: "mains",
+    image: "/sanduiche-pernil.jpg", // Adicionei imagem específica
   },
   {
     id: 11,
-    name: "House Red Wine",
-    description: "Glass of our signature Cabernet Sauvignon",
-    price: 8.95,
-    category: "drinks",
-    image: "/placeholder.svg?height=200&width=400",
+    name: "Moela com pão",
+    description: "Moela cozida lentamente em molho saboroso, acompanhada de pão francês.",
+    price: 38.00,
+    category: "mains",
+    image: "/moela-pao.jpg", // Adicionei imagem específica
   },
+  {
+    id: 12,
+    name: "Brandade de bacalhau",
+    description: "Bacalhau desfiado com purê de batata e azeite extra virgem.",
+    price: 34.00,
+    category: "mains",
+    image: "/brandade-bacalhau.jpg", // Adicionei imagem específica
+  },
+  {
+    id: 13,
+    name: "Carne de panela c/ aipim",
+    description: "Carne de panela macia e saborosa, servida com aipim cozido.",
+    price: 40.00,
+    category: "mains",
+    image: "/carne-de-panela.jpg",
+  },
+  {
+    id: 14,
+    name: "Filézinho ao gorgonzola",
+    description: "Filé mignon grelhado com molho cremoso de gorgonzola.",
+    price: 60.00,
+    category: "mains",
+    image: "/file-gorgonzola.jpg", // Adicionei imagem específica
+  },
+  {
+    id: 15,
+    name: "Costelinha com batata rústica",
+    description: "Costelinha de porco assada com temperos especiais e batatas rústicas.",
+    price: 65.00,
+    category: "mains",
+    image: "/costelinha.jpg",
+  },
+  {
+    id: 16,
+    name: "Amstel",
+    description: "Cerveja Amstel 600ml",
+    price: 12.00,
+    category: "beers",
+    image: "/amstel.jpg",
+  },
+  {
+    id: 17,
+    name: "Gin Tônica", 
+    description: "Mistura de gin, água tônica e um toque de limão, refrescante e leve.",
+    price: 22.00,
+    category: "drinks",
+    image: "/gin-tonica.jpg",
+  },
+  {
+    id: 18,
+    name: "Mojito",
+    description: "Rum, hortelã, açúcar, limão e água com gás, um clássico cubano refrescante.",
+    price: 22.00,
+    category: "drinks",
+    image: "/mojito.jpg", // Adicionei imagem específica
+  },
+  {
+    id: 19,
+    name: "Negroni",
+    description: "Gin, Campari e vermute tinto, um aperitivo italiano sofisticado e amargo.",
+    price: 22.00,
+    category: "drinks",
+    image: "/negroni.jpg", // Adicionei imagem específica
+  },
+  {
+    id: 20,
+    name: "Campari",
+    description: "Aperitivo italiano com sabor amargo e cítrico, servido com gelo e laranja.",
+    price: 12.00,
+    category: "drinks",
+    image: "/campari.jpg", // Adicionei imagem específica
+  },
+  {
+    id: 21,
+    name: "Vinho seco",
+    description: "Consulte nossa carta de vinhos para opções.",
+    price: 0.00, // Preço a consultar
+    category: "drinks",
+    image: "/vinho-seco.jpg", // Adicionei imagem específica
+  }
 ]
-
