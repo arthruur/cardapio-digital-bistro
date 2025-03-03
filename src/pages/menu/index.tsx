@@ -1,21 +1,43 @@
+// src/pages/menu/index.tsx
 "use client"
 
-import { useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ShoppingCart } from "lucide-react"
 import CategoryMenu from "@/components/category-menu"
+import Cart from "@/components/Cart"
 import TableIndicator from "@/components/table-indicator"
 import type { MenuItem } from "@/types/menu"
 import Image from "next/image"
 
 export default function BistroMenu() {
+  const searchParams = useSearchParams()
+  const tableId = searchParams ? searchParams.get("tableId") : null;
+
   const [cartItems, setCartItems] = useState<MenuItem[]>([])
-  const [tableNumber] = useState(12)
+  const [tableNumber, setTableNumber] = useState<number | null>(null)
   const [isCartOpen, setIsCartOpen] = useState(false)
+
+  useEffect(() => {
+    if (tableId) {
+      setTableNumber(Number(tableId))
+    }
+  }, [tableId])
 
   const addToCart = (item: MenuItem) => {
     setCartItems([...cartItems, item])
+  }
+
+  const removeFromCart = (index: number) => {
+    const newCartItems = [...cartItems]
+    newCartItems.splice(index, 1)
+    setCartItems(newCartItems)
+  }
+
+  const clearCart = () => {
+    setCartItems([])
   }
 
   const toggleCart = () => {
@@ -29,12 +51,16 @@ export default function BistroMenu() {
     { id: "beers", name: "Cervejas" },
   ]
 
+  if (!tableNumber) {
+    return <p className="text-center p-10">Mesa não encontrada.</p>
+  }
+
   return (
     <div className="min-h-screen bg-[#F6E7D7] text-[#0B0A0B]">
       <header className="bg-[#F6E7D7] text-[#3D2F29] p-4 sticky top-0 z-10 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
-          <TableIndicator tableNumber={tableNumber} />
+            <TableIndicator tableNumber={tableNumber} />
           </div>
           <Image src="bistro-153-logo.svg" alt="Bistro 153 Logo" width={150} height={80}/>
 
@@ -72,8 +98,14 @@ export default function BistroMenu() {
         </Tabs>
       </main>
 
-      
+      <Cart
+        items={cartItems}
+        removeFromCart={removeFromCart}
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        tableNumber={tableNumber}
+        clearCart={clearCart}
+      />
     </div>
   )
 }
-

@@ -7,6 +7,7 @@ import type { MenuItem } from "@/types/menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import toast from 'react-hot-toast'
 
 interface CartProps {
   items: MenuItem[]
@@ -14,23 +15,41 @@ interface CartProps {
   isOpen: boolean
   onClose: () => void
   tableNumber: number
+  clearCart: () => void
 }
 
-export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumber }: CartProps) {
+export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumber, clearCart }: CartProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isMobile = useMediaQuery("(max-width: 768px)")
 
   const total = items.reduce((sum, item) => sum + item.price, 0)
 
-  const handleSubmitOrder = () => {
+  const handleSubmitOrder = async () => {
     setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await fetch(`/api/orders?tableId=${tableNumber}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ items }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Erro ao enviar pedido")
+      }
+
+      const data = await response.json()
+      clearCart()
+      toast.success(data.message, {style: { background: "#3D2F29", color: "#F6E7D7" }})
+      
+      
+    } catch (error) {
+      console.error("Erro ao enviar pedido:", error, )
+      toast.error("Erro ao enviar o pedido, tente novamente.", {style: { background: "#3D2F29", color: "#F6E7D7" }})
+    } finally {
       setIsSubmitting(false)
-      onClose()
-      // You would typically send the order to your backend here
-      alert("Order submitted successfully!")
-    }, 1500)
+    }
   }
 
   const cartContent = (
@@ -39,7 +58,9 @@ export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumb
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-4">
             <p className="text-[#3D2F29]/70 mb-2">Seu pedido está vazio...</p>
-            <p className="text-sm text-[#3D2F29]/70">Ao adicionar itens ao seu pedido eles apareceram aqui! </p>
+            <p className="text-sm text-[#3D2F29]/70">
+              Ao adicionar itens ao seu pedido eles aparecerão aqui!
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-[#3D2F29]">
@@ -77,7 +98,7 @@ export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumb
             "Enviando..."
           ) : (
             <>
-              <Send className="mr-2 h-4 w-4" />Enviar pedido para a cozinha
+              <Send className="mr-2 h-4 w-4" /> Fazer pedido
             </>
           )}
         </Button>
@@ -105,4 +126,3 @@ export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumb
     </Dialog>
   )
 }
-
