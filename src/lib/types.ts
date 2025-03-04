@@ -1,5 +1,5 @@
-export type TableStatus = "vacant" | "occupied" | "reserved"
-export type OrderStatus = "new" | "preparing" | "ready" | "served"
+export type TableStatus = "livre" | "ocupado" | "reservado"
+export type OrderStatus = "novo" | "preparando" | "pronto" | "servido"
 
 export interface Order {
   id: number

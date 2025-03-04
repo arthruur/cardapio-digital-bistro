@@ -16,24 +16,26 @@ interface OrderDetailsProps {
 export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
   if (!table) {
     return (
-      <div className="flex-1 flex items-center justify-center p-4 text-muted-foreground">
+      <div className="flex-1 flex items-center justify-center p-4 text-muted-foreground bg-[#F6E7D7]/40">
         <div className="text-center">
-          <h3 className="text-lg font-medium">No table selected</h3>
-          <p className="mt-1">Select a table to view orders</p>
+          <h3 className="text-lg font-medium">Nenhuma mesa selecionada</h3>
+          <p className="mt-1">Selecione uma mesa para ver os pedidos</p>
         </div>
       </div>
     )
   }
+  console.log("os pedidos são:", table.orders); // Adiciona o console.log para exibir os pedidos da mesa
+
 
   const getStatusBadgeVariant = (status: OrderStatus) => {
     switch (status) {
-      case "new":
+      case "novo":
         return "default"
-      case "preparing":
+      case "preparando":
         return "secondary"
-      case "ready":
+      case "pronto":
         return "outline"
-      case "served":
+      case "servido":
         return "destructive"
       default:
         return "default"
@@ -42,13 +44,13 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
 
   const getNextStatus = (currentStatus: OrderStatus): OrderStatus | null => {
     switch (currentStatus) {
-      case "new":
-        return "preparing"
-      case "preparing":
-        return "ready"
-      case "ready":
-        return "served"
-      case "served":
+      case "novo":
+        return "preparando"
+      case "preparando":
+        return "pronto"
+      case "pronto":
+        return "servido"
+      case "servido":
         return null
       default:
         return null
@@ -57,13 +59,13 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
 
   const getNextStatusLabel = (currentStatus: OrderStatus): string => {
     switch (currentStatus) {
-      case "new":
+      case "novo":
         return "Start Preparing"
-      case "preparing":
+      case "preparando":
         return "Mark Ready"
-      case "ready":
+      case "pronto":
         return "Mark Served"
-      case "served":
+      case "servido":
         return "Completed"
       default:
         return ""
@@ -77,12 +79,13 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
         <Badge
           className={cn(
             "capitalize",
-            table.status === "vacant" ? "bg-green-500" : table.status === "occupied" ? "bg-red-500" : "bg-blue-500",
+            table.status === "livre" ? "bg-green-500" : table.status === "ocupado" ? "bg-red-500" : "bg-blue-500",
           )}
         >
           {table.status}
         </Badge>
       </div>
+      
 
       {table.orders.length === 0 ? (
         <div className="flex items-center justify-center h-64 text-muted-foreground">
@@ -90,7 +93,7 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
         </div>
       ) : (
         <div className="space-y-4">
-          {table.orders.map((order) => (
+          {(table.orders || []).map((order) => (
             <Card className="bg-[#F6E7D7]/40"key={order.id}>
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-center">
@@ -106,7 +109,7 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-1 mb-4">
-                  {order.items.map((item, index) => (
+                  {(order.items || []).map((item, index) => (
                     <li key={index} className="flex justify-between">
                       <span>{item}</span>
                     </li>
@@ -118,7 +121,7 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
                     <DollarSign className="h-4 w-4 mr-1" />
-                    <span className="font-medium">${order.total.toFixed(2)}</span>
+                    <span className="font-medium">${order.total}</span>
                   </div>
 
                   {getNextStatus(order.status) && (

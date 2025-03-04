@@ -1,15 +1,21 @@
-import { redirect } from "next/navigation"
+"use client"
+
+import { useAuth } from "@/context/authContext"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import Dashboard from "@/components/dashboard"
 
-export default function Home() {
-  // In a real app, you would check authentication here
-  // If not authenticated, redirect to login
-  const isAuthenticated = true
+export default function AdminPage() {
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
 
-  if (!isAuthenticated) {
-    redirect("/login")
-  }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login")
+    }
+  }, [isAuthenticated, router])
+
+  if (!isAuthenticated) return null
 
   return <Dashboard />
 }
-

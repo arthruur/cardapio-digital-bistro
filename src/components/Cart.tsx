@@ -7,6 +7,7 @@ import type { MenuItem } from "@/types/menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { OrderStatus } from "@/lib/types"
 import toast from 'react-hot-toast'
 
 interface CartProps {
@@ -25,33 +26,56 @@ export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumb
   const total = items.reduce((sum, item) => sum + item.price, 0)
 
   const handleSubmitOrder = async () => {
+    if (!tableNumber || !items.length) {
+      toast.error("Número da mesa e itens são obrigatórios.", {
+        style: { background: "#3D2F29", color: "#F6E7D7" },
+      })
+      return
+    }
+  
+    // Calcula o total e cria um ID para o pedido (aqui usamos Date.now() como exemplo)
+    const orderTotal = items.reduce((acc, item) => acc + item.price, 0)
+    const newOrder = {
+      id: Date.now(), // ou outra lógica para gerar ID único
+      items: items.map(item => item.name), // mapeia para um array de nomes
+      status: "novo" as OrderStatus, // seguindo o tipo OrderStatus
+      time: new Date().toLocaleTimeString(), // horário atual
+      total: orderTotal,
+    }
+  
     setIsSubmitting(true)
     try {
-      const response = await fetch(`/api/orders?tableId=${tableNumber}`, {
-        method: "POST",
+      const response = await fetch(`/api/tables?tableId=${tableNumber}`, {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ newOrder }),
       })
-
-      if (!response.ok) {
-        throw new Error("Erro ao enviar pedido")
-      }
-
+  
+      console.log('Items', items)
+      console.log('Status da resposta:', response.status)
       const data = await response.json()
+      console.log('Resposta da API:', data)
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao atualizar pedido")
+      }
+  
       clearCart()
-      toast.success(data.message, {style: { background: "#3D2F29", color: "#F6E7D7" }})
-      
-      
-    } catch (error) {
-      console.error("Erro ao enviar pedido:", error, )
-      toast.error("Erro ao enviar o pedido, tente novamente.", {style: { background: "#3D2F29", color: "#F6E7D7" }})
+      toast.success(data.message, {
+        style: { background: "#3D2F29", color: "#F6E7D7" },
+      })
+    } catch (error: unknown) {
+      console.error("Erro ao enviar pedido:", error instanceof Error ? error.message : String(error))
+      toast.error(error instanceof Error ? error.message : String(error), {
+        style: { background: "#3D2F29", color: "#F6E7D7" },
+      })
     } finally {
       setIsSubmitting(false)
     }
   }
-
+      
   const cartContent = (
     <>
       <div className="flex-1 overflow-auto bg-[#F6E7D7] p-4">

@@ -14,11 +14,11 @@ interface TableOrdersProps {
 export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrdersProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "vacant":
+      case "livre":
         return "bg-green-500"
-      case "occupied":
+      case "ocupado":
         return "bg-red-500"
-      case "reserved":
+      case "reservado":
         return "bg-blue-500"
       default:
         return "bg-gray-500"
@@ -30,7 +30,7 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-[#3D2F29]">Mesas</h2>
         <Badge variant="outline" className="px-2 py-1 text-[#3D2F29] border-[#3D2F29]">
-          {tables.filter((t) => t.status === "occupied").length} / {tables.length} Ocupadas
+          {tables.filter((t) => t.status === "ocupado").length} / {tables.length} Ocupadas
         </Badge>
       </div>
 

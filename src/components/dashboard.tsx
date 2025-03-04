@@ -1,91 +1,45 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { TableOrders } from "@/components/table-orders"
 import { OrderDetails } from "@/components/order-details"
 import type { TableData, OrderStatus } from "@/lib/types"
+import toast from "react-hot-toast"
 
 export default function Dashboard() {
   const [selectedTable, setSelectedTable] = useState<TableData | null>(null)
+  const [tables, setTables] = useState<TableData[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // In a real app, this would come from an API or database
-  const [tables, setTables] = useState<TableData[]>([
-    {
-      id: 1,
-      name: "Mesa 1",
-      status: "occupied",
-      orders: [
-        {
-          id: 101,
-          items: ["Margherita Pizza", "Caesar Salad", "Coke"],
-          status: "preparing",
-          time: "12:30 PM",
-          total: 32.5,
+  const fetchTables = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch("/api/tables", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
         },
-        { id: 102, items: ["Garlic Bread", "Sparkling Water"], status: "served", time: "12:35 PM", total: 8.75 },
-      ],
-    },
-    {
-      id: 2,
-      name: "Mesa 2",
-      status: "occupied",
-      orders: [
-        {
-          id: 201,
-          items: ["Pasta Carbonara", "Tiramisu", "White Wine"],
-          status: "ready",
-          time: "12:40 PM",
-          total: 42.0,
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Mesa 3",
-      status: "vacant",
-      orders: [],
-    },
-    {
-      id: 4,
-      name: "Mesa 4",
-      status: "occupied",
-      orders: [
-        {
-          id: 401,
-          items: ["Steak", "Mashed Potatoes", "Red Wine"],
-          status: "preparing",
-          time: "12:45 PM",
-          total: 58.5,
-        },
-        { id: 402, items: ["Cheesecake", "Coffee"], status: "new", time: "1:00 PM", total: 12.25 },
-      ],
-    },
-    {
-      id: 5,
-      name: "Mesa 5",
-      status: "reserved",
-      orders: [],
-    },
-    {
-      id: 6,
-      name: "Mesa 6",
-      status: "occupied",
-      orders: [{ id: 601, items: ["Burger", "Fries", "Beer"], status: "served", time: "12:50 PM", total: 24.75 }],
-    },
-    {
-      id: 7,
-      name: "Mesa 7",
-      status: "vacant",
-      orders: [],
-    },
-    {
-      id: 8,
-      name: "Mesa 8",
-      status: "occupied",
-      orders: [{ id: 801, items: ["Sushi Platter", "Sake"], status: "preparing", time: "1:05 PM", total: 48.0 }],
-    },
-  ])
+      })
+
+      if (!response.ok) {
+        throw new Error("Erro ao buscar as mesas")
+      }
+
+      const data = await response.json()
+      console.log("Dados da API:", data)
+      setTables(data.tables || [])
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro desconhecido")
+      setTables([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTables()
+  }, [])
 
   const updateOrderStatus = (tableId: number, orderId: number, newStatus: OrderStatus) => {
     setTables((prevTables) =>
@@ -102,10 +56,9 @@ export default function Dashboard() {
           }
         }
         return table
-      }),
+      })
     )
 
-    // If we're updating the currently selected table, update that too
     if (selectedTable?.id === tableId) {
       setSelectedTable((prevTable) => {
         if (!prevTable) return null
@@ -120,6 +73,17 @@ export default function Dashboard() {
         }
       })
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-[#F6E7D7]/10">
+        <DashboardSidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <p>Carregando mesas...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -138,4 +102,3 @@ export default function Dashboard() {
     </div>
   )
 }
-
