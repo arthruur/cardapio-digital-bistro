@@ -20,18 +20,7 @@ interface Table {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-  // Tratamento para requisições OPTIONS (CORS preflight)
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*'); 
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(200).end();
-  }
-
-  const { tableId } = req.query // Pega o tableId dos query 
-  
-  
+  const { tableId } = req.query // Pega o tableId dos query parameters
 
 // Método GET: Retorna todas as mesas ou uma mesa específica
 if (req.method === 'GET') {
