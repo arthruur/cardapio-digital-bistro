@@ -115,7 +115,7 @@ if (req.method === 'PATCH') {
     // Atualiza a mesa no banco de dados
     await db.collection<Table>('tables').updateOne(
       { id: Number(tableId) },
-      { $set: { orders: updatedOrders } }
+      { $set: { orders: updatedOrders, status: "ocupado" } }
     )
 
     return res.status(200).json({ 

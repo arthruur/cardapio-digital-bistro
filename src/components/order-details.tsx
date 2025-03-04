@@ -1,12 +1,12 @@
 "use client"
 
 import type { TableData, OrderStatus } from "@/lib/types"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Clock, DollarSign } from "lucide-react"
+import { Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
+import toast from "react-hot-toast"
 
 interface OrderDetailsProps {
   table: TableData | null
@@ -23,23 +23,6 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
         </div>
       </div>
     )
-  }
-  console.log("os pedidos são:", table.orders); // Adiciona o console.log para exibir os pedidos da mesa
-
-
-  const getStatusBadgeVariant = (status: OrderStatus) => {
-    switch (status) {
-      case "novo":
-        return "default"
-      case "preparando":
-        return "secondary"
-      case "pronto":
-        return "outline"
-      case "servido":
-        return "destructive"
-      default:
-        return "default"
-    }
   }
 
   const getNextStatus = (currentStatus: OrderStatus): OrderStatus | null => {
@@ -60,17 +43,46 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
   const getNextStatusLabel = (currentStatus: OrderStatus): string => {
     switch (currentStatus) {
       case "novo":
-        return "Start Preparing"
+        return "Começar a preparar"
       case "preparando":
-        return "Mark Ready"
+        return "Marcar como pronto"
       case "pronto":
-        return "Mark Served"
+        return "Marcar como servido"
       case "servido":
-        return "Completed"
+        return "Finalizado"
       default:
         return ""
     }
   }
+  const handleClearTable = async () => {
+    if (!table) return; // Se não houver mesa selecionada, não faz nada
+  
+    try {
+      const response = await fetch(`/api/tables?tableId=${table.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (!response.ok) {
+        toast.error("Erro ao limpar a mesa", {
+          style: { background: "#3D2F29", color: "#F6E7D7" },
+        });
+        throw new Error("Erro ao limpar a mesa");
+        
+      }
+  
+      const data = await response.json();
+      toast.success(data.message, {
+        style: { background: "#3D2F29", color: "#F6E7D7" },
+      })
+
+      console.log(data.message); // Exibe a mensagem de sucesso no console
+    } catch (error) {
+      console.error("Erro ao limpar a mesa:", error);
+    }
+  };
 
   return (
     <div className="flex-1 p-4 overflow-auto bg-[#F6E7D7]/40">
@@ -84,6 +96,7 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
         >
           {table.status}
         </Badge>
+        <Button onClick={handleClearTable}>Limpar Mesa </Button>
       </div>
       
 
@@ -92,37 +105,27 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
           <p>Sem pedidos para essa mesa.</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {(table.orders || []).map((order) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {(table.orders || []).filter((order) => order.status !== ("Finalizado" as OrderStatus)).map((order) => (
             <Card className="bg-[#F6E7D7]/40"key={order.id}>
               <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg">Pedido {order.id}</CardTitle>
-                  <Badge variant={getStatusBadgeVariant(order.status)} className="capitalize">
-                    {order.status}
-                  </Badge>
-                </div>
-                <div className="flex items-center text-sm text-muted-foreground">
+                <div className="flex text-[#3D2F29] justify-center items-center">
+                <div className="mr-2 ">Pedido feito às:</div>
                   <Clock className="h-4 w-4 mr-1" />
                   {order.time}
+                
                 </div>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-1 mb-4">
                   {(order.items || []).map((item, index) => (
-                    <li key={index} className="flex justify-between">
-                      <span>{item}</span>
+                    <li key={index} className="flex font-bold justify-between border-b-1 border-[#3D2F29] mb-6 pb-4">
+                    <span>{item}</span>
+                      <span className="flex items-center justify-center w-5 h-5 rounded-md bg-[#3D2F29] text-[#F6E7D7] text-xs">1</span>
                     </li>
                   ))}
                 </ul>
-
-                <Separator className="my-3" />
-
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <DollarSign className="h-4 w-4 mr-1" />
-                    <span className="font-medium">${order.total}</span>
-                  </div>
+                <div className="flex justify-center items-center">
 
                   {getNextStatus(order.status) && (
                     <Button

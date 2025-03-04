@@ -11,6 +11,7 @@ interface TableOrdersProps {
   onSelectTable: (table: TableData) => void
 }
 
+
 export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrdersProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -24,6 +25,8 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
         return "bg-gray-500"
     }
   }
+  
+
 
   return (
     <div className="w-full md:w-1/2 lg:w-2/5 p-4 overflow-auto border-r bg-[#F6E7D7]/40">
@@ -34,7 +37,7 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {tables.map((table) => {
           return (
             <Card
@@ -46,7 +49,7 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
               onClick={() => onSelectTable(table)}
             >
               <CardContent className="p-4">
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex flex-col justify-between items-center mb-2">
                   <h3 className="font-medium">Mesa {table.id}</h3>
                   <div className="flex items-center">
                     <div className={cn("w-2 h-2 rounded-full mr-2", getStatusColor(table.status))}></div>
