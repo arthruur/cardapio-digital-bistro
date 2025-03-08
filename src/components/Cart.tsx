@@ -2,28 +2,44 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { X, Send } from "lucide-react"
-import type { MenuItem } from "@/types/menu"
+import { X, Send, Plus, Minus } from "lucide-react" // Importa ícones de + e -
+import type { MenuItem } from "@/lib/types"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { OrderStatus } from "@/lib/types"
 import toast from 'react-hot-toast'
 
+// Extendendo o tipo MenuItem para incluir a quantidade
+interface CartItem extends MenuItem {
+  quantity: number
+}
+
 interface CartProps {
-  items: MenuItem[]
+  items: CartItem[]
   removeFromCart: (index: number) => void
+  increaseQuantity: (index: number) => void
+  decreaseQuantity: (index: number) => void
   isOpen: boolean
   onClose: () => void
   tableNumber: number
   clearCart: () => void
 }
 
-export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumber, clearCart }: CartProps) {
+export default function Cart({
+  items,
+  removeFromCart,
+  increaseQuantity,
+  decreaseQuantity,
+  isOpen,
+  onClose,
+  tableNumber,
+  clearCart
+}: CartProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isMobile = useMediaQuery("(max-width: 768px)")
 
-  const total = items.reduce((sum, item) => sum + item.price, 0)
+  // Calcula o total levando em consideração a quantidade de cada item
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   const handleSubmitOrder = async () => {
     if (!tableNumber || !items.length) {
@@ -33,16 +49,21 @@ export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumb
       return
     }
   
-    // Calcula o total e cria um ID para o pedido (aqui usamos Date.now() como exemplo)
-    const orderTotal = items.reduce((acc, item) => acc + item.price, 0)
+    // Calcula o total e cria o payload do pedido com os itens e suas quantidades
+    const orderTotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0)
     const newOrder = {
-      id: Date.now(), // ou outra lógica para gerar ID único
-      items: items.map(item => item.name), // mapeia para um array de nomes
-      status: "novo" as OrderStatus, // seguindo o tipo OrderStatus
-      time: new Date().toLocaleTimeString(), // horário atual
-      total: orderTotal,
+      id: String(Date.now()), // Gera um ID único
+      items: {
+        create: items.map(item => ({
+          menuItemId: item.id,       // ID do item do cardápio relacionado
+          quantity: item.quantity,   // Quantidade selecionada
+          subtotal: item.price * item.quantity // Subtotal calculado
+        }))
+      },
+      status: "PENDING",       // Valor compatível com o enum OrderStatus
+      total: orderTotal,       // Total do pedido
     }
-  
+      
     setIsSubmitting(true)
     try {
       const response = await fetch(`/api/tables?tableId=${tableNumber}`, {
@@ -92,16 +113,39 @@ export default function Cart({ items, removeFromCart, isOpen, onClose, tableNumb
               <div key={index} className="py-4 flex justify-between items-center">
                 <div>
                   <h3 className="font-medium">{item.name}</h3>
-                  <p className="text-sm text-[#3D2F29]/70">R${item.price.toFixed(0)}</p>
+                  <p className="text-sm text-[#3D2F29]/70">
+                    ({item.quantity}x R${item.price.toFixed(0)})
+                  </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeFromCart(index)}
-                  className="h-8 w-8 text-[#3D2F29]/70 hover:text-[#3D2F29]"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => decreaseQuantity(index)}
+                    disabled={item.quantity <= 1}
+                    title="Diminuir quantidade"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span>{item.quantity}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => increaseQuantity(index)}
+                    title="Aumentar quantidade"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeFromCart(index)}
+                    title="Remover item"
+                    className="text-[#3D2F29]/70 hover:text-[#3D2F29]"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

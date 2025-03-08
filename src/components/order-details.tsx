@@ -27,13 +27,13 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
 
   const getNextStatus = (currentStatus: OrderStatus): OrderStatus | null => {
     switch (currentStatus) {
-      case "novo":
-        return "preparando"
-      case "preparando":
-        return "pronto"
-      case "pronto":
-        return "servido"
-      case "servido":
+      case "PENDING":
+        return "PREPARING"
+      case "PREPARING":
+        return "READY"
+      case "READY":
+        return "DELIVERED"
+      case "DELIVERED":
         return null
       default:
         return null
@@ -42,13 +42,13 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
 
   const getNextStatusLabel = (currentStatus: OrderStatus): string => {
     switch (currentStatus) {
-      case "novo":
+      case "PENDING":
         return "Começar a preparar"
-      case "preparando":
+      case "PREPARING":
         return "Marcar como pronto"
-      case "pronto":
+      case "READY":
         return "Marcar como servido"
-      case "servido":
+      case "DELIVERED":
         return "Finalizado"
       default:
         return ""
@@ -87,11 +87,11 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
   return (
     <div className="flex-1 p-4 overflow-auto bg-[#F6E7D7]/40">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Pedidos da Mesa {table.id}</h2>
+        <h2 className="text-xl font-bold">Pedidos da Mesa {table.number}</h2>
         <Badge
           className={cn(
             "capitalize",
-            table.status === "livre" ? "bg-green-500" : table.status === "ocupado" ? "bg-red-500" : "bg-blue-500",
+            table.status === "AVAILABLE" ? "bg-green-500" : table.status === "OCCUPIED" ? "bg-red-500" : "bg-blue-500",
           )}
         >
           {table.status}
@@ -132,7 +132,7 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
                       onClick={() => {
                         const nextStatus = getNextStatus(order.status)
                         if (nextStatus) {
-                          onUpdateStatus(table.id, order.id, nextStatus)
+                          onUpdateStatus(table.number, order.id, nextStatus)
                         }
                       }}
                       size="sm"

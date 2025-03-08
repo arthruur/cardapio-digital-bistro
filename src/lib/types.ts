@@ -1,18 +1,33 @@
-export type TableStatus = "livre" | "ocupado" | "reservado"
-export type OrderStatus = "novo" | "preparando" | "pronto" | "servido"
-
+export type TableStatus = "AVAILABLE" | "OCCUPIED" | "RESERVED"
+export type OrderStatus = "PENDING" | "PREPARING" | "READY" | "DELIVERED" | "CANCELLED"
 export interface Order {
   id: number
   items: string[]
   status: OrderStatus
   time: string
   total: number
+  createdAt: Date;
+
 }
 
 export interface TableData {
-  id: number
-  name: string
+  id: string
+  number: number
   status: TableStatus
   orders: Order[]
 }
 
+export interface MenuItem {
+  id: string
+  name: string
+  description: string
+  imageUrl?: string
+  price: number
+  isAvailable: boolean
+  category: string
+  image?: string
+}
+
+export interface CartItem extends MenuItem {
+  quantity: number
+}

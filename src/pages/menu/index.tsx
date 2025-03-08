@@ -1,24 +1,33 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/menu/index.tsx
 "use client"
 
 import { useSearchParams } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import dynamic from "next/dynamic"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { ShoppingCart } from "lucide-react"
 import CategoryMenu from "@/components/category-menu"
 import Cart from "@/components/Cart"
 import TableIndicator from "@/components/table-indicator"
-import type { MenuItem } from "@/types/menu"
-import Image from "next/image"
+import type { MenuItem, CartItem } from "@/lib/types"
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false })
+import animationData from "@/animations/logo-animation.json"
 
 export default function BistroMenu() {
   const searchParams = useSearchParams()
-  const tableId = searchParams ? searchParams.get("tableId") : null;
+  const tableId = searchParams ? searchParams.get("tableId") : null
 
-  const [cartItems, setCartItems] = useState<MenuItem[]>([])
+  const [cartItems, setCartItems] = useState<CartItem []>([])
   const [tableNumber, setTableNumber] = useState<number | null>(null)
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [categories, setCategories] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  // Referência para o componente Lottie
+  const lottieRef = useRef<any>(null)
 
   useEffect(() => {
     if (tableId) {
@@ -26,44 +35,107 @@ export default function BistroMenu() {
     }
   }, [tableId])
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/menu/categories')
+        if (!response.ok) throw new Error('Falha ao carregar o menu')
+        const data = await response.json()
+        
+        const processedCategories = data.categories.map((category: any) => ({
+          ...category,
+          items: category.items.map((item: any) => ({
+            ...item,
+            price: Number(item.price),
+          })),
+        }))
+  
+        setCategories(processedCategories)
+        setIsLoading(false)
+      } catch (err: any) {
+        setError(err.message)
+        setIsLoading(false)
+      }
+    }
+  
+    fetchCategories()
+  }, [])
+  
+
+  const handleAnimationClick = () => {
+    if (lottieRef.current) {
+      lottieRef.current.goToAndPlay(0, true)
+    }
+  }
+
   const addToCart = (item: MenuItem) => {
-    setCartItems([...cartItems, item])
+    setCartItems((prevItems) => {
+      const itemIndex = prevItems.findIndex((cartItem) => cartItem.id === item.id)
+      if (itemIndex !== -1) {
+        return prevItems.map((cartItem, index) =>
+          index === itemIndex ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem
+        )
+      }
+      return [...prevItems, { ...item, quantity: 1 }]
+    })
   }
-
+  
   const removeFromCart = (index: number) => {
-    const newCartItems = [...cartItems]
-    newCartItems.splice(index, 1)
-    setCartItems(newCartItems)
+    setCartItems((prevItems) => prevItems.filter((_, i) => i !== index))
   }
-
+  
+  const increaseQuantity = (index: number) => {
+    setCartItems((prevItems) =>
+      prevItems.map((item, i) =>
+        i === index ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    )
+  }
+  
+  const decreaseQuantity = (index: number) => {
+    setCartItems((prevItems) =>
+      prevItems.map((item, i) =>
+        i === index && item.quantity > 1
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
+      )
+    )
+  }
+  
   const clearCart = () => {
     setCartItems([])
   }
-
+  
   const toggleCart = () => {
     setIsCartOpen(!isCartOpen)
   }
 
-  const categories = [
-    { id: "starters", name: "Entradas" },
-    { id: "mains", name: "Pratos Principais" },
-    { id: "drinks", name: "Drinks" },
-    { id: "beers", name: "Cervejas" },
-  ]
 
   if (!tableNumber) {
     return <p className="text-center p-10">Mesa não encontrada.</p>
+  }
+  if (isLoading) {
+    return <p>Carregando...</p>
+  }
+
+  if (error) {
+    return <p>Erro ao carregar o menu: {error}</p>
   }
 
   return (
     <div className="min-h-screen bg-[#F6E7D7] text-[#0B0A0B]">
       <header className="bg-[#F6E7D7] text-[#3D2F29] p-4 sticky top-0 z-10 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <TableIndicator tableNumber={tableNumber} />
+          <TableIndicator tableNumber={tableNumber} />
+          <div onClick={handleAnimationClick} className="cursor-pointer mr-4">
+            <Lottie 
+              lottieRef={lottieRef}
+              animationData={animationData}
+              loop={false}
+              autoplay={false}
+              style={{ width: 65, height: 65 }}
+            />
           </div>
-          <Image src="bistro-153-logo.svg" alt="Bistro 153 Logo" width={150} height={80}/>
-
           <Button
             variant="outline"
             className="relative bg-[#3D2F29] border-[#3D2F29] hover:bg-[#F6E7D7] hover:text-[#0B0A0B] text-[#FFFCF7]"
@@ -81,7 +153,7 @@ export default function BistroMenu() {
       </header>
 
       <main className="container mx-auto p-4 pb-24">
-        <Tabs defaultValue="starters" className="w-full">
+        <Tabs defaultValue={categories[0]?.id} className="w-full">
           <TabsList className="w-full mb-6 bg-[#F6E7D7] p-1 overflow-x-auto flex flex-nowrap">
             {categories.map((category) => (
               <TabsTrigger key={category.id} value={category.id} className="flex-1 whitespace-nowrap">
@@ -92,7 +164,7 @@ export default function BistroMenu() {
 
           {categories.map((category) => (
             <TabsContent key={category.id} value={category.id}>
-              <CategoryMenu category={category.id} addToCart={addToCart} />
+              <CategoryMenu items={category.items} addToCart={addToCart} />
             </TabsContent>
           ))}
         </Tabs>
@@ -101,6 +173,8 @@ export default function BistroMenu() {
       <Cart
         items={cartItems}
         removeFromCart={removeFromCart}
+        increaseQuantity={increaseQuantity}
+        decreaseQuantity={decreaseQuantity}
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         tableNumber={tableNumber}
