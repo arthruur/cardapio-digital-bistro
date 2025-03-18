@@ -44,7 +44,7 @@ export default function Dashboard() {
   const updateOrderStatus = (tableId: number, orderId: number, newStatus: OrderStatus) => {
     setTables((prevTables) =>
       prevTables.map((table) => {
-        if (table.id === tableId) {
+        if (table.id === String(tableId)) {
           return {
             ...table,
             orders: table.orders.map((order) => {
@@ -59,7 +59,7 @@ export default function Dashboard() {
       })
     )
 
-    if (selectedTable?.id === tableId) {
+    if (selectedTable?.id === String(tableId)) {
       setSelectedTable((prevTable) => {
         if (!prevTable) return null
         return {
@@ -93,7 +93,7 @@ export default function Dashboard() {
         <main className="flex flex-1 overflow-hidden">
           <TableOrders
             tables={tables}
-            selectedTableId={selectedTable?.id}
+            selectedTableId={selectedTable?.id ? parseInt(selectedTable.id) : undefined}
             onSelectTable={(table) => setSelectedTable(table)}
           />
           <OrderDetails table={selectedTable} onUpdateStatus={updateOrderStatus} />
