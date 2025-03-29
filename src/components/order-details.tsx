@@ -1,6 +1,7 @@
 "use client"
 
-import type { TableData, OrderStatus } from "@/lib/types"
+import { TableData } from '../lib/types'
+import { OrderStatus } from '@prisma/client'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,20 +10,14 @@ import { cn } from "@/lib/utils"
 import toast from "react-hot-toast"
 
 interface OrderDetailsProps {
-  table: TableData | null
-  onUpdateStatus: (tableId: number, orderId: number, newStatus: OrderStatus) => void
+  order: TableData | undefined
+  onClose: () => void
+  onUpdateStatus: (orderId: string, status: OrderStatus) => Promise<void>
 }
 
-export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
-  if (!table) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-4 text-muted-foreground bg-[#F6E7D7]/40">
-        <div className="text-center">
-          <h3 className="text-lg font-medium">Nenhuma mesa selecionada</h3>
-          <p className="mt-1">Selecione uma mesa para ver os pedidos</p>
-        </div>
-      </div>
-    )
+export function OrderDetails({ order, onClose, onUpdateStatus }: OrderDetailsProps) {
+  if (!order) {
+    return null
   }
 
   const getNextStatus = (currentStatus: OrderStatus): OrderStatus | null => {
@@ -54,11 +49,12 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
         return ""
     }
   }
+
   const handleClearTable = async () => {
-    if (!table) return; // Se não houver mesa selecionada, não faz nada
+    if (!order) return; // Se não houver mesa selecionada, não faz nada
   
     try {
-      const response = await fetch(`/api/tables?tableId=${table.id}`, {
+      const response = await fetch(`/api/tables?tableId=${order.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -85,67 +81,73 @@ export function OrderDetails({ table, onUpdateStatus }: OrderDetailsProps) {
   };
 
   return (
-    <div className="flex-1 p-4 overflow-auto bg-[#F6E7D7]/40">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Pedidos da Mesa {table.number}</h2>
-        <Badge
-          className={cn(
-            "capitalize",
-            table.status === "AVAILABLE" ? "bg-green-500" : table.status === "OCCUPIED" ? "bg-red-500" : "bg-blue-500",
-          )}
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">Detalhes do Pedido</h2>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700"
         >
-          {table.status}
-        </Badge>
-        <Button onClick={handleClearTable}>Limpar Mesa </Button>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
-      
 
-      {table.orders.length === 0 ? (
-        <div className="flex items-center justify-center h-64 text-muted-foreground">
-          <p>Sem pedidos para essa mesa.</p>
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Mesa</h3>
+          <p className="mt-1 text-sm text-gray-900">{order.tableNumber}</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {(table.orders || []).filter((order) => order.status !== ("Finalizado" as OrderStatus)).map((order) => (
-            <Card className="bg-[#F6E7D7]/40"key={order.id}>
-              <CardHeader className="pb-2">
-                <div className="flex text-[#3D2F29] justify-center items-center">
-                <div className="mr-2 ">Pedido feito às:</div>
-                  <Clock className="h-4 w-4 mr-1" />
-                  {order.time}
-                
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-1 mb-4">
-                  {(order.items || []).map((item, index) => (
-                    <li key={index} className="flex font-bold justify-between border-b-1 border-[#3D2F29] mb-6 pb-4">
-                    <span>{item}</span>
-                      <span className="flex items-center justify-center w-5 h-5 rounded-md bg-[#3D2F29] text-[#F6E7D7] text-xs">1</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex justify-center items-center">
 
-                  {getNextStatus(order.status) && (
-                    <Button
-                      onClick={() => {
-                        const nextStatus = getNextStatus(order.status)
-                        if (nextStatus) {
-                          onUpdateStatus(table.number, order.id, nextStatus)
-                        }
-                      }}
-                      size="sm"
-                    >
-                      {getNextStatusLabel(order.status)}
-                    </Button>
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Número do Pedido</h3>
+          <p className="mt-1 text-sm text-gray-900">{order.orderNumber}</p>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Status</h3>
+          <select
+            value={order.status}
+            onChange={(e) => onUpdateStatus(order.id, e.target.value as OrderStatus)}
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          >
+            <option value="PENDING">Pendente</option>
+            <option value="PREPARING">Preparando</option>
+            <option value="READY">Pronto</option>
+            <option value="DELIVERED">Entregue</option>
+          </select>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Itens</h3>
+          <div className="mt-2 space-y-2">
+            {order.orders.map((item) => (
+              <div key={item.id} className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{item.name}</p>
+                  <p className="text-sm text-gray-500">Quantidade: {item.quantity}</p>
+                  {item.notes && (
+                    <p className="text-sm text-gray-500">Observações: {item.notes}</p>
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <p className="text-sm font-medium text-gray-900">
+                  R$ {(item.price * item.quantity).toFixed(2)}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
+
+        <div className="pt-4 border-t border-gray-200">
+          <div className="flex justify-between items-center">
+            <p className="text-sm font-medium text-gray-900">Total</p>
+            <p className="text-lg font-bold text-gray-900">
+              R$ {order.items.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

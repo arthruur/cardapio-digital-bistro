@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { db } from '@/lib/db'
+import { Prisma } from '@prisma/client'
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { tableId } = req.query
@@ -10,9 +12,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const tables = tableId
         ? await db.table.findUnique({
             where: { number: Number(tableId) },
-            include: { orders: true },
+            include: { Order: true },
           })
-        : await db.table.findMany({ include: { orders: true } })
+        : await db.table.findMany({ include: { Order: true } })
 
       return res.status(200).json({ tables })
     } catch (error) {
@@ -24,22 +26,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Método POST: Criar uma nova mesa
   if (req.method === 'POST') {
     const { number, status } = req.body
-
+  
     if (!number || !status) {
       return res.status(400).json({ message: 'Número da mesa e status são obrigatórios.' })
     }
-
+  
     try {
       const newTable = await db.table.create({
-        data: { number, status },
+        data: {
+          number: Number(number), // garante que é um inteiro
+          status: status.toUpperCase() // transforma para o formato esperado (AVAILABLE, OCCUPIED, etc.)
+        } as Prisma.TableUncheckedCreateInput // type assertion para indicar que os campos com valor default podem ser omitidos
       })
       return res.status(201).json({ message: 'Mesa criada com sucesso!', table: newTable })
     } catch (error) {
       console.error(error)
-      return res.status(500).json({ message: 'Erro ao criar mesa', error })
+      return res.status(500).json({ message: 'Erro ao criar mesa' })
     }
   }
-
+  
   // Método PATCH: Adicionar pedidos a uma mesa
   if (req.method === 'PATCH') {
     const { newOrder } = req.body
@@ -53,9 +58,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: { number: Number(tableId) },
         data: {
           status: 'OCCUPIED',
-          orders: { create: newOrder },
+          Order: { create: newOrder },
         },
-        include: { orders: true },
+        include: { Order: true },
       })
 
       return res.status(200).json({ message: 'Pedido adicionado!', table: updatedTable })

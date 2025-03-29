@@ -1,19 +1,24 @@
+import { OrderStatus } from '@prisma/client'
+
 export type TableStatus = "AVAILABLE" | "OCCUPIED" | "RESERVED"
-export type OrderStatus = "PENDING" | "PREPARING" | "READY" | "DELIVERED" | "CANCELLED"
 export interface Order {
   id: number
   items: string[]
   status: OrderStatus
   time: string
   total: number
+  notes: string
   createdAt: Date;
 
 }
 
-export interface TableData {
+export type TableData = {
   id: string
-  number: number
-  status: TableStatus
+  tableNumber: number
+  orderNumber: string
+  status: OrderStatus
+  createdAt: string
+  updatedAt: string
   orders: Order[]
 }
 
@@ -30,4 +35,12 @@ export interface MenuItem {
 
 export interface CartItem extends MenuItem {
   quantity: number
+}
+
+export type OrderItem = {
+  id: string
+  name: string
+  quantity: number
+  price: number
+  notes?: string | null
 }

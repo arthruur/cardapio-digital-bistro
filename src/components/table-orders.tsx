@@ -5,11 +5,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { OrderStatus } from "@prisma/client"
 
 interface TableOrdersProps {
   tables: TableData[]
   selectedTableId: number | undefined
   onSelectTable: (table: TableData) => void
+  onOrderSelect: (orderId: string) => void
+  onUpdateStatus: (orderId: string, status: OrderStatus) => void
 }
 
 export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrdersProps) {
@@ -38,7 +41,7 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
   const sortedTables = [...tables].sort((a, b) => {
     switch (sortOption) {
       case "number":
-        return a.number - b.number // Ordena pela numeração da mesa
+        return a.tableNumber - b.tableNumber // Ordena pela numeração da mesa
       case "orders":
         const latestOrderA = a.orders.length > 0 ? new Date(a.orders[0].createdAt).getTime() : 0
         const latestOrderB = b.orders.length > 0 ? new Date(b.orders[0].createdAt).getTime() : 0
@@ -60,7 +63,7 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-[#3D2F29]">Mesas</h2>
         <Badge variant="outline" className="px-2 py-1 text-[#3D2F29] border-[#3D2F29]">
-          {tables.filter((t) => t.status === "OCCUPIED").length} / {tables.length} Ocupadas
+          {tables.filter((t) => t.status === "OCCUPIED" as OrderStatus).length} / {tables.length} Ocupadas
         </Badge>
       </div>
 
@@ -98,16 +101,16 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
         {sortedTables.map((table) => {
           return (
             <Card
-              key={table.number}
+              key={table.tableNumber}
               className={cn(
                 "cursor-pointer transition-all hover:shadow-md bg-[#F6E7D7]/30",
-                selectedTableId === table.number ? "ring-2 ring-[#3D2F29]" : "",
+                selectedTableId === table.tableNumber ? "ring-2 ring-[#3D2F29]" : "",
               )}
               onClick={() => onSelectTable(table)}
             >
               <CardContent className="p-4">
                 <div className="flex flex-col justify-between items-center mb-2">
-                  <h3 className="font-medium">Mesa {table.number}</h3>
+                  <h3 className="font-medium">Mesa {table.tableNumber}</h3>
                   <div className="flex items-center">
                     <div className={cn("w-2 h-2 rounded-full mr-2", getStatusColor(table.status))}></div>
                     <span className="text-xs capitalize">{statusTranslations[table.status] || table.status}</span>
