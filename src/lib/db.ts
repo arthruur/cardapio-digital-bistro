@@ -1,14 +1,16 @@
-import { PrismaClient } from '@prisma/client'
+// /lib/db.ts
+import { PrismaClient } from '@prisma/client';
 
-declare global {
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined
+// Exportando o cliente Prisma como 'db' para manter compatibilidade com seu código
+export const db = new PrismaClient()
+
+// Cliente PG para notificações em tempo real
+export async function createNotificationClient() {
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? true : false
+  });
+  
+  const client = await pool.connect();
+  return client;
 }
-
-export const db = globalThis.prisma || new PrismaClient()
-
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.prisma = db
-}
-
-export default db

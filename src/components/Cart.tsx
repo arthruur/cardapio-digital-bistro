@@ -49,19 +49,21 @@ export default function Cart({
       return
     }
   
-    // Calcula o total e cria o payload do pedido com os itens e suas quantidades
     const orderTotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-    const newOrder = {
-      id: String(Date.now()), // Gera um ID único
-      items: {
-        create: items.map(item => ({
-          menuItemId: item.id,       // ID do item do cardápio relacionado
-          quantity: item.quantity,   // Quantidade selecionada
-          subtotal: item.price * item.quantity // Subtotal calculado
-        }))
-      },
-      status: "PENDING",       // Valor compatível com o enum OrderStatus
-      total: orderTotal,       // Total do pedido
+    
+    // Corrigindo a estrutura do payload para corresponder à API
+    const payload = {
+      newOrder: {
+        items: {
+          create: items.map(item => ({
+            menuItemId: item.id,
+            quantity: item.quantity,
+            subtotal: item.price * item.quantity
+          }))
+        },
+        status: "PENDING",
+        total: orderTotal
+      }
     }
       
     setIsSubmitting(true)
@@ -71,31 +73,35 @@ export default function Cart({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ newOrder }),
+        body: JSON.stringify(payload),
       })
   
-      console.log('Items', items)
-      console.log('Status da resposta:', response.status)
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Erro ao atualizar pedido")
+      }
+  
       const data = await response.json()
       console.log('Resposta da API:', data)
   
-      if (!response.ok) {
-        throw new Error(data.message || "Erro ao atualizar pedido")
-      }
-  
       clearCart()
-      toast.success(data.message, {
+      toast.success("Pedido enviado com sucesso!", {
         style: { background: "#3D2F29", color: "#F6E7D7" },
       })
+      onClose() // Fechar o carrinho após sucesso
     } catch (error: unknown) {
-      console.error("Erro ao enviar pedido:", error instanceof Error ? error.message : String(error))
-      toast.error(error instanceof Error ? error.message : String(error), {
-        style: { background: "#3D2F29", color: "#F6E7D7" },
-      })
+      console.error("Erro ao enviar pedido:", error)
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao enviar pedido",
+        {
+          style: { background: "#3D2F29", color: "#F6E7D7" },
+        }
+      )
     } finally {
       setIsSubmitting(false)
     }
   }
+  
       
   const cartContent = (
     <>

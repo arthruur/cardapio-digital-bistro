@@ -1,84 +1,97 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useEffect, useState } from "react"
-import { DashboardSidebar } from "./dashboard-sidebar"
-import { OrderDetails } from "./order-details"
-import { useSSE } from "../hooks/use-sse"
-import { toast } from "react-hot-toast"
-import { OrderStatus } from "@prisma/client"
+import { useState, useRef } from "react"
+import dynamic from "next/dynamic"
+import { LayoutDashboard, Utensils, Table } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import animationData from "@/animations/logo-animation.json"
 
-export function Dashboard() {
-  const [mounted, setMounted] = useState(false)
-  const [selectedOrder, setSelectedOrder] = useState<string | null>(null)
-  const { data, error, isConnected } = useSSE()
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false })
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+const menuItems = [
+  { label: "Cardápio", icon: Utensils, key: "menu" },
+  { label: "Pedidos", icon: LayoutDashboard, key: "orders" },
+  { label: "Mesas", icon: Table, key: "tables" },
+]
 
-  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
-    try {
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status }),
-      })
+export default function AdminDashboard() {
+  const [active, setActive] = useState("menu")
+  const lottieRef = useRef<any>(null)
 
-      if (!response.ok) {
-        throw new Error('Erro ao atualizar status do pedido')
-      }
-
-      toast.success('Status atualizado com sucesso!')
-    } catch (err) {
-      console.error('Erro ao atualizar status:', err)
-      toast.error('Erro ao atualizar status do pedido')
+  const renderContent = () => {
+    switch (active) {
+      case "menu":
+        return <div>📋 Gerencie o cardápio aqui</div>
+      case "orders":
+        return <div>📦 Veja os pedidos em tempo real</div>
+      case "tables":
+        return <div>🪑 Controle as mesas ocupadas</div>
+      default:
+        return null
     }
   }
 
-  if (!mounted) {
-    return null
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600">Erro ao carregar dados</h2>
-          <p className="mt-2 text-gray-600">{error.message}</p>
-        </div>
-      </div>
-    )
+  const handleAnimationClick = () => {
+    if (lottieRef.current) {
+      lottieRef.current.goToAndPlay(0, true)
+    }
   }
 
   return (
-    <div className="flex h-screen">
-      <DashboardSidebar />
-      <div className="flex-1 overflow-hidden">
-        <div className="flex h-full">
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h1 className="text-2xl font-bold">Dashboard</h1>
-              <div className="flex items-center space-x-2">
-                <div className={`h-3 w-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-                <span className="text-sm text-gray-600">
-                  {isConnected ? 'Conectado' : 'Desconectado'}
-                </span>
-              </div>
-            </div>
+    <TooltipProvider>
+      <div className="flex min-h-screen bg-[#F6E7D7] text-[#0B0A0B]">
+        {/* Sidebar compacta com logo */}
+        <aside className="w-20 bg-[#3D2F29] text-[#FFFCF7] flex flex-col py-6 px-2 items-center gap-6">
+          {/* Logo */}
+          <div onClick={handleAnimationClick} className="cursor-pointer">
+            <Lottie
+              lottieRef={lottieRef}
+              animationData={animationData}
+              loop={false}
+              autoplay={false}
+              style={{ width: 70, height: 70 }}
+            />
           </div>
-          {selectedOrder && (
-            <div className="w-96 border-l border-gray-200 p-6">
-              <OrderDetails
-                order={data.find((order) => order.id === selectedOrder)}
-                onClose={() => setSelectedOrder(null)}
-                onUpdateStatus={updateOrderStatus}
-              />
-            </div>
-          )}
-        </div>
+
+          {/* Ícones com tooltip */}
+          {menuItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <Tooltip key={item.key}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setActive(item.key)}
+                    className={`p-3 rounded-lg transition-colors ${
+                      active === item.key
+                        ? "bg-[#F6E7D7] text-[#0B0A0B]"
+                        : "hover:bg-[#2c241f]"
+                    }`}
+                  >
+                    <Icon size={22} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <span>{item.label}</span>
+                </TooltipContent>
+              </Tooltip>
+            )
+          })}
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-8">
+          <h1 className="text-3xl font-semibold mb-6 capitalize">
+            {menuItems.find((i) => i.key === active)?.label}
+          </h1>
+          <div className="bg-white rounded-xl shadow p-6">{renderContent()}</div>
+        </main>
       </div>
-    </div>
+    </TooltipProvider>
   )
 }

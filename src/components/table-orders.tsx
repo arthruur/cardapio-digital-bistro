@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { TableData } from "@/lib/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -7,15 +7,19 @@ import { cn } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { OrderStatus } from "@prisma/client"
 
+
+let tableData:TableData[] = []
+
 interface TableOrdersProps {
-  tables: TableData[]
+  
   selectedTableId: number | undefined
   onSelectTable: (table: TableData) => void
   onOrderSelect: (orderId: string) => void
   onUpdateStatus: (orderId: string, status: OrderStatus) => void
 }
 
-export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrdersProps) {
+export function TableOrders({  selectedTableId, onSelectTable }: TableOrdersProps) {
+
   const [sortOption, setSortOption] = useState<"number" | "orders" | "status">("number")
 
   const statusTranslations: { [key: string]: string } = {
@@ -38,7 +42,7 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
   }
 
   // Função de ordenação
-  const sortedTables = [...tables].sort((a, b) => {
+  const sortedTables = [...tableData].sort((a, b) => {
     switch (sortOption) {
       case "number":
         return a.tableNumber - b.tableNumber // Ordena pela numeração da mesa
@@ -58,12 +62,29 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
     }
   })
 
+
+  useEffect(() => {
+   // simulate the change of tables data
+    setInterval(() => {
+      const newTableData =  [...tableData]
+      newTableData.map((item) => {
+        if(Math.random() > 0.8) item.status = "OCCUPIED" as OrderStatus
+        else if (Math.random() < 0.2) item.status = "AVAILABLE" as OrderStatus
+        else item.status = "RESERVED" as OrderStatus
+      })
+      tableData = newTableData
+    }, 5000);
+  },[])
+  useEffect(() => {
+    tableData = JSON.parse(localStorage.getItem('tables')|| '[]')
+  }, []);
+
   return (
     <div className="w-full md:w-1/2 lg:w-2/5 p-4 overflow-auto border-r bg-[#F6E7D7]/40">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-[#3D2F29]">Mesas</h2>
-        <Badge variant="outline" className="px-2 py-1 text-[#3D2F29] border-[#3D2F29]">
-          {tables.filter((t) => t.status === "OCCUPIED" as OrderStatus).length} / {tables.length} Ocupadas
+        <Badge variant="outline" className="px-2 py-1 text-[#3D2F29] border-[#3D2F29]" >
+          {tableData.filter((t) => t.status === "OCCUPIED" as OrderStatus).length} / {tableData.length} Ocupadas
         </Badge>
       </div>
 
@@ -108,7 +129,7 @@ export function TableOrders({ tables, selectedTableId, onSelectTable }: TableOrd
               )}
               onClick={() => onSelectTable(table)}
             >
-              <CardContent className="p-4">
+              <CardContent className="p-4" >
                 <div className="flex flex-col justify-between items-center mb-2">
                   <h3 className="font-medium">Mesa {table.tableNumber}</h3>
                   <div className="flex items-center">
