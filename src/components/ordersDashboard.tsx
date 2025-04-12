@@ -8,7 +8,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const socket = io({ path: "/api/socket" })
 
-    socket.on("new_order", (order: Order) => {
+    socket.on("new_order", (order) => {
       setOrders((prev) => [order, ...prev])
     })
 
@@ -22,10 +22,11 @@ export default function AdminDashboard() {
       <h1>Pedidos</h1>
       {orders.map((p, i) => (
         <div key={i} className="p-2 border mb-2">
-          <strong>Mesa: {p.tableNumber}</strong>
+          <strong>Mesa: {p.table}</strong>
           <pre>{JSON.stringify(p.items, null, 2)}</pre>
         </div>
       ))}
     </div>
   )
+  
 }

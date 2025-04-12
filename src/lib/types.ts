@@ -9,7 +9,7 @@ export interface Order {
   total: number
   notes: string
   createdAt: Date;
-  tableNumber: number
+  table: string
 
 }
 
