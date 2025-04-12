@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import toast from 'react-hot-toast'
+import { io } from "socket.io-client"
 
 // Extendendo o tipo MenuItem para incluir a quantidade
 interface CartItem extends MenuItem {
@@ -40,6 +41,7 @@ export default function Cart({
 
   // Calcula o total levando em consideração a quantidade de cada item
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const socket = io({path: "/api/socket"})
 
   const handleSubmitOrder = async () => {
     if (!tableNumber || !items.length) {
@@ -50,40 +52,23 @@ export default function Cart({
     }
   
     const orderTotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-    
-    // Corrigindo a estrutura do payload para corresponder à API
-    const payload = {
-      newOrder: {
-        items: {
-          create: items.map(item => ({
-            menuItemId: item.id,
-            quantity: item.quantity,
-            subtotal: item.price * item.quantity
-          }))
-        },
-        status: "PENDING",
-        total: orderTotal
-      }
-    }
-      
+          
     setIsSubmitting(true)
     try {
-      const response = await fetch(`/api/tables?tableId=${tableNumber}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      })
-  
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Erro ao atualizar pedido")
+      
+      socket.emit("new_order", {
+        table: tableNumber,
+        items: items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price, 
+          subtotal: item.price * item.quantity,
+        })),
+        total: orderTotal,
+        timestampe: new Date().toISOString(),
       }
-  
-      const data = await response.json()
-      console.log('Resposta da API:', data)
-  
+
+      )
       clearCart()
       toast.success("Pedido enviado com sucesso!", {
         style: { background: "#3D2F29", color: "#F6E7D7" },

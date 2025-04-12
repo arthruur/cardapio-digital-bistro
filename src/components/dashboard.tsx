@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import animationData from "@/animations/logo-animation.json"
+import OrdersDashboard from "./ordersDashboard"
 
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false })
 
@@ -29,7 +30,7 @@ export default function AdminDashboard() {
       case "menu":
         return <div>📋 Gerencie o cardápio aqui</div>
       case "orders":
-        return <div>📦 Veja os pedidos em tempo real</div>
+        return <OrdersDashboard />
       case "tables":
         return <div>🪑 Controle as mesas ocupadas</div>
       default:
